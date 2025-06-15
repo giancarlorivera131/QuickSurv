@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+  <meta charset="UTF-8">
+  <title>Survey</title>
+  <style>
+    body {
+      background: #fff0f5;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 50px;
+      color: #444;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      transition: all 0.5s ease;
+      position: relative;
+    }
+
+    h1, h2 {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+
+    .question {
+      font-size: 18px;
+      margin: 20px 0;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #ff6b81;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #e55070;
+    }
+
+    #result, #pictures, #loadingScreen {
+      display: none;
+      margin-top: 30px;
+    }
+
+    .flower {
+      font-size: 80px;
+      animation: bloom 1.5s ease-in-out infinite;
+      margin: 40px 0;
+    }
+
+    @keyframes bloom {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 30px;
+      position: relative;
+    }
+
+    .gallery img, .gallery video {
+      width: 180px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      opacity: 0;
+      transform: scale(3) rotate(360deg);
+      animation: boomIn 0.8s forwards;
+    }
+
+    .gallery img:nth-child(n), .gallery video:nth-child(n) {
+      animation-delay: calc(0.05s * var(--i));
+    }
+
+    @keyframes boomIn {
+      to {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+      }
+    }
+
+    #loveMessage {
+      display: none;
+      font-size: 18px;
+      padding: 20px;
+      max-width: 700px;
+      background: rgba(255,255,255,0.85);
+      border-left: 4px solid #ff6b81;
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      white-space: pre-wrap;
+      animation: typing 4s steps(60, end), blink 0.8s step-end infinite alternate;
+      overflow: hidden;
+      text-align: left;
+    }
+
+    @keyframes typing {
+      from { width: 0 }
+      to { width: 100% }
+    }
+
+    @keyframes blink {
+      50% { border-color: transparent }
+    }
+
+    .progress-bar {
+      width: 100%;
+      background: #eee;
+      border-radius: 15px;
+      overflow: hidden;
+      margin-top: 20px;
+      height: 25px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #ff6b81;
+      animation: loadProgress 3s linear forwards;
+    }
+
+    @keyframes loadProgress {
+      from { width: 0%; }
+      to { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<audio id="bgMusic" autoplay loop hidden>
+  <source src="audio/soundtrack.mp3" type="audio/mp3">
+</audio>
+
+<!-- 🌼 UPDATED SURVEY SECTION 🌼 -->
+<div class="container" id="surveyContainer">
+  <h1 style="color: #ff6b81; font-size: 2.2em; margin-bottom: 10px;">Quick Survey 🌼</h1>
+  <p class="question" style="background: linear-gradient(to right, #ffe0ec, #fffafc);
+    padding: 20px;
+    border-radius: 15px;
+    font-size: 18px;
+    line-height: 1.7;
+    box-shadow: 0 4px 10px rgba(255,107,129,0.2);">
+    Sagutin mo lang 'to honestly ha 😚<br><br>
+    🌙 Kapag gabi na at tahimik ang paligid... <br>
+    Ano mas gusto mo?<br><br>
+    💤 Tahimik na gabi na payapa lang?<br>
+    💭 O yung gabi na kahit tahimik, ang daming iniisip?
+  </p>
+  <button onclick="showFlower()">Tahimik na gabi</button>
+  <button onclick="showFlower()">Madaming iniisip</button>
+</div>
+
+<div class="container" id="result">
+  <div class="flower">🌸</div>
+  <h2>HANDA KA NA BA SA NEXT NA TANONG? 🤔</h2>
+  <button onclick="showPictures()">Oo</button>
+  <button onclick="showPictures()">Hindi</button>
+</div>
+
+<div class="container" id="loadingScreen">
+  <h2>Loading next question... ⏳</h2>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+</div>
+
+<div class="container" id="pictures">
+  <div class="gallery" id="gallery"></div>
+  <div id="loveMessage"></div>
+</div>
+
+<script>
+  function showFlower() {
+    document.getElementById("surveyContainer").style.display = "none";
+    document.getElementById("result").style.display = "block";
+
+    const music = document.getElementById("bgMusic");
+    music.play().catch(() => {
+      console.log("Autoplay blocked. User must interact.");
+    });
+  }
+
+  function showPictures() {
+    document.getElementById("result").style.display = "none";
+    document.getElementById("loadingScreen").style.display = "block";
+
+    const progressFill = document.getElementById("progressFill");
+    progressFill.style.animation = "none";
+    progressFill.offsetHeight;
+    progressFill.style.animation = "loadProgress 3s linear forwards";
+
+    setTimeout(() => {
+      document.getElementById("loadingScreen").style.display = "none";
+      document.getElementById("pictures").style.display = "block";
+
+      const gallery = document.getElementById("gallery");
+      for (let i = 1; i <= 18; i++) {
+        const img = document.createElement("img");
+        img.src = `image/pic${i}.jpg`;
+        img.alt = `pic${i}`;
+        img.style.setProperty('--i', i);
+        gallery.appendChild(img);
+      }
+
+      for (let v = 1; v <= 7; v++) {
+        const vid = document.createElement("video");
+        vid.src = `video/vid${v}.mp4`;
+        vid.controls = true;
+        vid.style.setProperty('--i', v + 18);
+        gallery.appendChild(vid);
+      }
+
+      const message = `Bebe ko okay ka lang po ba talaga?
+Kung may gusto kang sabihin, dito mo po sabihin.
+My Bebe, makikinig ako. May concern pa din ako sayo kaya gusto ko malaman,
+na talaga bang okay lang po ba Bebe ko?
+
+Miss na din kita kausap Bebe, pero may galit ka pa din, gets ko naman po.
+Pero gusto ko talaga malaman na okay ka lang po ba talaga Bebe?
+
+Kitang kita ko sayo sa mga mata mo at boses mo Bebe.
+Pero gagawin ko muna lahat, ipapakita ko sayo na nagbago ako.
+At bago ka ulit ligawan Bebe, gusto ko ibang tao na ang makikita mo.
+
+Yung lumang version ko na lagi mong hinahanap hanap Bebe.
+
+Hindi ko alam kung mapapatawad mo pa ba ako Bebe, pero aasa pa din ako.
+Kung may pagmamahal ka pa din para sakin kahit konti lang...
+
+Andyan ako hindi para pumasok.
+Kagaya ng sinabi ko  HINTAYIN KITA kung handa ka na ulit my Bebe.
+
+Nagbabago ako para hindi lang sa atin,
+para sa sarili ko din  para dumating yung panahon na maging karapat dapat ulit ako sayo Bebe.
+
+Kung gusto mo po makipag usap, alam mo naman na lagi akong bukas  TG or Messenger.
+Hindi ako nagpapaawa, gusto ko lang malaman mo na galing sa puso ko ang paghingi ko ng tawad.
+
+I LOVE YOU SO MUCH MY BEBE.
+Kung mababasa mo man to Mahal na mahal kita Bebe. 
+
+Sobrang miss na miss na miss na kita, bebe ko.
+Miss na ko boses mo, mukha mo.
+Miss ko na lahat ng ginagawa natin.
+Miss ko na lahat, bebe  pati mga kwento mo, bebe ko.
+Miss na miss ko.
+
+At alam kong hindi na 'to gagana, ginagawa ko.
+Alam kong huli na lahat,
+Pero gagawin ko lahat 
+Hindi dahil pipilitin kitang bumalik,
+Kundi para ipakita sa’yo na seryoso ako sa pagbabago ko.
+
+Na aayusin ko na ulit trato ko 
+Na kagaya ng ginagawa ko dati.
+Kahit wala akong kasiguraduhan,
+Ikaw pa din ang dahilan bakit ko 'to ipagpapatuloy, bebe.`;
+      let i = 0;
+      const msgBox = document.getElementById("loveMessage");
+      msgBox.style.display = "block";
+      msgBox.textContent = "";
+
+      function typeWriter() {
+        if (i < message.length) {
+          msgBox.textContent += message.charAt(i);
+          i++;
+          setTimeout(typeWriter, 30);
+        }
+      }
+      typeWriter();
+
+    }, 3000);
+  }
+</script>
+
+</body>
+</html>
